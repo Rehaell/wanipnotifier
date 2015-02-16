@@ -1,5 +1,4 @@
 #!/bin/sh
-# create a file called wan_ip.txt on /tmp/
 
 # info for cloudflare service 
 cfToken=TOKEN
