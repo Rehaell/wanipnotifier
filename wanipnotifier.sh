@@ -16,7 +16,8 @@ if [ -f wan_ip.txt ];
 then
         OLD_WAN_IP=`cat /tmp/wan_ip.txt` 
 else
-        echo "No file, need IP"
+        echo "No file exists, creating it."
+        echo "" > /tmp/wan_ip.txt
         OLD_WAN_IP="" 
 fi
 
