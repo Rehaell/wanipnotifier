@@ -12,6 +12,7 @@ then
 else
         echo "No file, need IP"
         OLD_WAN_IP="" 
+        echo "WAN IP is $WAN_IP" 
 fi
 
 if [ "$WAN_IP" = "$OLD_WAN_IP" ]; 
