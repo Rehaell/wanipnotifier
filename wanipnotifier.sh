@@ -1,5 +1,6 @@
 #!/bin/sh
 # create a file called wan_ip-cf.txt on /tmp/
+
 # info for cloudflare service 
 cfkey=KEY
 cfuser=USER
