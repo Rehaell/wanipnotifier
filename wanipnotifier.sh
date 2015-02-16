@@ -1,8 +1,13 @@
 #!/bin/sh
- 
+
+# info for cloudflare service 
 cfkey=KEY
 cfuser=USER
 cfhost=DOMAIN
+
+# info for pushover service
+potoken=TOKEN
+pouser=USER
  
 WAN_IP=`curl -s http://icanhazip.com` 
 
@@ -24,8 +29,8 @@ else
         curl -s https://www.cloudflare.com/api.html?a=DIUP\&hosts="$cfhost"\&u="$cfuser"\&tkn="$cfkey"\&ip="$WAN_IP" > /dev/null
 
 	curl -s \
-	  --form-string "token=TOKEN" \
-	  --form-string "user=USER" \
+	  --form-string "token=$potoken" \
+	  --form-string "user=$pouser" \
 	  --form-string "message= The IP changed to $WAN_IP" \
 	  https://api.pushover.net/1/messages.json
 
