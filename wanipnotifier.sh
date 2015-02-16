@@ -12,12 +12,12 @@ then
 else
         echo "No file, need IP"
         OLD_WAN_IP="" 
-        echo "WAN IP is $WAN_IP" 
 fi
 
 if [ "$WAN_IP" = "$OLD_WAN_IP" ]; 
 then
-        echo "IP Unchanged" 
+        echo "IP Unchanged"
+        echo "WAN IP is $WAN_IP" 
 else
         echo $WAN_IP > /home/pi/myscripts/wan_ip-cf.txt
         echo "Updating DNS to $WAN_IP"
