@@ -2,19 +2,19 @@
 # create a file called wan_ip-cf.txt on /tmp/
 
 # info for cloudflare service 
-cfkey=KEY
-cfuser=USER
-cfhost=DOMAIN
+cfToken=TOKEN
+cfUser=USER
+cfDomain=DOMAIN
 
 # info for pushover service
-potoken=TOKEN
-pouser=USER
+poToken=TOKEN
+poUser=USER
  
 WAN_IP=`curl -s http://icanhazip.com` 
 
-if [ -f wan_ip-cf.txt ]; 
+if [ -f wan_ip.txt ]; 
 then
-        OLD_WAN_IP=`cat /tmp/wan_ip-cf.txt` 
+        OLD_WAN_IP=`cat /tmp/wan_ip.txt` 
 else
         echo "No file, need IP"
         OLD_WAN_IP="" 
@@ -25,13 +25,15 @@ then
         echo "IP Unchanged"
         echo "WAN IP is $WAN_IP" 
 else
-        echo $WAN_IP > /tmp/wan_ip-cf.txt
+        echo $WAN_IP > /tmp/wan_ip.txt
         echo "Updating DNS to $WAN_IP"
-        curl -s https://www.cloudflare.com/api.html?a=DIUP\&hosts="$cfhost"\&u="$cfuser"\&tkn="$cfkey"\&ip="$WAN_IP" > /dev/null
+        # use -k if encounter certificate issues !!LESS SECURE!!
+        curl -s https://www.cloudflare.com/api.html?a=DIUP\&hosts="$cfDomain"\&u="$cfUser"\&tkn="$cfToken"\&ip="$WAN_IP" > /dev/null
 
+	# use -k if encounter certificate issues !!LESS SECURE!!
 	curl -s \
-	  --form-string "token=$potoken" \
-	  --form-string "user=$pouser" \
+	  --form-string "token=$poToken" \
+	  --form-string "user=$poUser" \
 	  --form-string "message= The IP changed to $WAN_IP" \
 	  https://api.pushover.net/1/messages.json
 
