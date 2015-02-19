@@ -4,6 +4,8 @@
 cfToken=TOKEN
 cfUser=USER
 cfDomain=DOMAIN
+cfDomainId=DOMAINID
+cfSubDomain=SUBDOMAIN
 
 # info for pushover service
 poToken=TOKEN
@@ -28,10 +30,19 @@ else
         echo $WAN_IP > /tmp/wan_ip.txt
         echo "Updating DNS to $WAN_IP"
         # use -k if encounter certificate issues !!LESS SECURE!!
-        curl -s https://www.cloudflare.com/api.html?a=DIUP\&hosts="$cfDomain"\&u="$cfUser"\&tkn="$cfToken"\&ip="$WAN_IP" > /dev/null
+        curl -s -k https://www.cloudflare.com/api_json.html \
+          -d 'a=rec_edit' \
+          -d 'tkn=$cfToken' \
+          -d 'email=$cfUser' \
+          -d 'z=$cfDomain' \
+          -d 'id=$cfDomainId' \
+          -d 'type=A' \
+          -d 'name=$cfSubDomain' \
+          -d 'ttl=1' \
+          -d 'content=$WAN_IP'
 
 	# use -k if encounter certificate issues !!LESS SECURE!!
-	curl -s \
+	curl -s -k \
 	  --form-string "token=$poToken" \
 	  --form-string "user=$poUser" \
 	  --form-string "message= The IP changed to $WAN_IP" \
