@@ -39,7 +39,7 @@ else
           -d 'type=A' \
           -d 'name=$cfSubDomain' \
           -d 'ttl=1' \
-          -d 'content=$WAN_IP'
+          -d 'content='$WAN_IP
 
 	# use -k if encounter certificate issues !!LESS SECURE!!
 	curl -s -k \
