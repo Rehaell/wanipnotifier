@@ -31,15 +31,15 @@ else
         echo "Updating DNS to $WAN_IP"
         # use -k if encounter certificate issues !!LESS SECURE!!
         curl -s -k https://www.cloudflare.com/api_json.html \
-          -d 'a=rec_edit' \
-          -d 'tkn=$cfToken' \
-          -d 'email=$cfUser' \
-          -d 'z=$cfDomain' \
-          -d 'id=$cfDomainId' \
-          -d 'type=A' \
-          -d 'name=$cfSubDomain' \
-          -d 'ttl=1' \
-          -d 'content='$WAN_IP
+          -d "a=rec_edit" \
+          -d "tkn=$cfToken" \
+          -d "email=$cfUser" \
+          -d "z=$cfDomain" \
+          -d "id=$cfDomainId" \
+          -d "type=A" \
+          -d "name=$cfSubDomain: \
+          -d "ttl=1" \
+          -d "content=$WAN_IP"
 
 	# use -k if encounter certificate issues !!LESS SECURE!!
 	curl -s -k \
