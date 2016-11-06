@@ -1,52 +1,63 @@
-#!/bin/sh
+#!/bin/bash
 
-# info for cloudflare service 
-cfToken=TOKEN
-cfUser=USER
-cfDomain=DOMAIN
-cfDomainId=DOMAINID
-cfSubDomain=SUBDOMAIN
+# CHANGE THESE
+# CLOUDFLARE INFO
+auth_email=EMAIL
+auth_key=KEY # found in cloudflare account settings
+zone_name=ZONE
+record_name=RECORD
+# PUSHOVER INFO 
+id_text="IP has been changed from $old_ip to $ip "
+id_user=USERKEY
+id_token=USERTOKEN
 
-# info for pushover service
-poToken=TOKEN
-poUser=USER
- 
-WAN_IP=`curl -s http://icanhazip.com` 
 
-if [ -f wan_ip.txt ]; 
-then
-        OLD_WAN_IP=`cat /tmp/wan_ip.txt` 
-else
-        echo "No file exists, creating it."
-        echo "" > /tmp/wan_ip.txt
-        OLD_WAN_IP="" 
+# MAYBE CHANGE THESE
+ip=$(curl -s http://ipv4.icanhazip.com)
+ip_file="ip.txt"
+id_file="cloudflare.ids"
+log_file="cloudflare.log"
+
+
+# LOGGER
+log() {
+    if [ "$1" ]; then
+        echo -e "[$(date)] - $1" >> $log_file
+    fi
+}
+
+# SCRIPT START
+log "Check Initiated"
+
+if [ -f $ip_file ]; then
+    old_ip=$(cat $ip_file)
+    if [ $ip == $old_ip ]; then
+        echo "IP has not changed."
+        exit 0
+    fi
 fi
 
-if [ "$WAN_IP" = "$OLD_WAN_IP" ]; 
-then
-        echo "IP Unchanged"
-        echo "WAN IP is $WAN_IP" 
+if [ -f $id_file ] && [ $(wc -l $id_file | cut -d " " -f 1) == 2 ]; then
+    zone_identifier=$(head -1 $id_file)
+    record_identifier=$(tail -1 $id_file)
 else
-        echo $WAN_IP > /tmp/wan_ip.txt
-        echo "Updating DNS to $WAN_IP"
-        # use -k if encounter certificate issues !!LESS SECURE!!
-        curl -s -k https://www.cloudflare.com/api_json.html \
-          -d "a=rec_edit" \
-          -d "tkn=$cfToken" \
-          -d "email=$cfUser" \
-          -d "z=$cfDomain" \
-          -d "id=$cfDomainId" \
-          -d "type=A" \
-          -d "name=$cfSubDomain: \
-          -d "ttl=1" \
-          -d "content=$WAN_IP"
-
-	# use -k if encounter certificate issues !!LESS SECURE!!
-	curl -s -k \
-	  --form-string "token=$poToken" \
-	  --form-string "user=$poUser" \
-	  --form-string "message= The IP changed to $WAN_IP" \
-	  https://api.pushover.net/1/messages.json
-
+    zone_identifier=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$zone_name" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 )
+    record_identifier=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records?name=$record_name" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json"  | grep -Po '(?<="id":")[^"]*')
+    echo "$zone_identifier" > $id_file
+    echo "$record_identifier" >> $id_file
 fi
 
+update=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records/$record_identifier" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json" --data "{\"id\":\"$zone_identifier\",\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$ip\"}")
+
+if [[ $update == *"\"success\":false"* ]]; then
+    message="API UPDATE FAILED. DUMPING RESULTS:\n$update"
+    log "$message"
+    echo -e "$message"
+    exit 1
+else
+    message="IP changed to: $ip"
+    echo "$ip" > $ip_file
+    log "$message"
+    echo "$message"
+    curl -s --form-string "token=$id_token" --form-string "user=$id_user" --form-string "message=$id_text" https://api.pushover.net/1/messages.j$
+fi
